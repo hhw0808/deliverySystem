@@ -68,11 +68,17 @@ static int inputPasswd(int x, int y) {
 	printf("input password for (%i, %i) storage : ",x,y);
 	scanf("%s", password);
 	
-	//if (password==passwd) ->return 0
+	//if (password==passwd or masterpasswd) ->return 0
+	if(strcmp(password,deliverySystem[x][y].passwd) == 0 || (password,deliverySystem[x][y].passwd) == masterPassword)
+	{
+		return 0;
+	}
+	
 	//else ->return -1
-	
-
-	
+	else if(strcmp(password,deliverySystem[x][y].passwd) != 0)
+	{
+		return -1;
+	}	
 }
 
 
@@ -93,16 +99,29 @@ int str_backupSystem(char* filepath) {
 
 	if(fp != NULL)
 	{
+		fprintf(fp, "%d %d\n", systemSize[0], systemSize[1]);
+		fprintf(fp, "%s\n", masterPassword);
 		
-		
-		fclose(fp);
+		for(x=0; x<systemSize[0]; x++)
+		{	
+			for(y=0; y<systemSize[1]; y++)
+			{
+				if(deliverySystem[x][y].cnt > 1)
+				{
+					fprintf(fp, "%d %d %d %d", x, y, deliverySystem[x][y].building, deliverySystem[x][y].room);
+					fprintf(fp, "%s %s \n", deliverySystem[x][y].passwd, deliverySystem[x][y].context);
+				}
+			}
+		}
 		return 0;
 	}
+	
 	else
 	{
 		return -1;
 	}
-
+	
+	fclose(fp);
 }
 
 //create delivery system on the double pointer deliverySystem
@@ -160,6 +179,13 @@ int str_createSystem(char* filepath) {
 //free the memory of the deliverySystem 
 void str_freeSystem(void) {
 	
+	int i;
+
+	for(i=0; i<systemSize[0]; i++) 
+	{
+		free(deliverySystem[i]);
+	}
+
 	free(deliverySystem);
 	
 	
@@ -233,7 +259,18 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 	
 	storedCnt++;
 	
-	//return
+	if (deliverySystem[x][y].cnt > 0)
+	{
+       return 0; 
+	}
+	
+	else 
+	{
+       return -1; 
+    }
+
+
+
 }
 
 
@@ -244,20 +281,21 @@ int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_S
 //return : 0 - successfully extracted, -1 = failed to extract
 int str_extractStorage(int x, int y) {
 	
-	if (inputPasswd(int x, int y) != 0)
+	if(inputPasswd(x, y) == 0)
 	{
-		return -1;
-	}
-	
-	else
-	{
-		initStorage(int x, int y);
+		initStorage(x, y);
 		
 		storedCnt--;
 		
 		return 0;
 	}
-	//error O..
+	
+	else
+	{
+		return -1;
+	}
+	
+	
 }
 
 //find my package from the storage
