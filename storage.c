@@ -52,10 +52,15 @@ static void printStorageInside(int x, int y) {
 //int x, int y : cell coordinate to be initialized
 static void initStorage(int x, int y) {
 	
+	int i;
+	
 	deliverySystem[x][y].building = 0;
 	deliverySystem[x][y].room = 0;
 	deliverySystem[x][y].cnt = 0;
-	
+	for(i=0; deliverySystem[x][y].passwd[i] != 0; i++)
+	{
+		deliverySystem[x][y].passwd[i] = 0;
+	}
 }
 
 //get password input and check if it is correct for the cell (x,y)
@@ -63,7 +68,7 @@ static void initStorage(int x, int y) {
 //return : 0 - password is matching, -1 - password is not matching	
 
 static int inputPasswd(int x, int y) {
-	char password;	//typed password
+	char password[PASSWD_LEN+1];	//typed password
 	
 	printf("input password for (%i, %i) storage : ",x,y);
 	scanf("%s", password);
@@ -133,28 +138,27 @@ int str_createSystem(char* filepath) {
 	int x, y;
 	FILE *fp;
 	char c;
+	int input_row, input_column;
 
 	fp = fopen(filepath, "r");	//open filpath	
 	if (fp == NULL)
 	{
 		return -1;
 	}
-	
 	else if (fp != NULL)
 	{	
 		fscanf(fp, "%d, %d", &systemSize[0], &systemSize[1]);
 		fscanf(fp, "%s", masterPassword);
 		
-		deliverySystem = (struct storage_t **)malloc(systemSize[0] * sizeof(struct storage_t*));
+		deliverySystem = (storage_t **)malloc(systemSize[0] * sizeof(storage_t*));
 		
 		for(i=0; i<systemSize[0]; i++) 
 		{
 			deliverySystem[i] = (storage_t *) malloc(systemSize[1] * sizeof(storage_t));			
 		}
-		
+	
 		for (x=0; x<systemSize[0]; x++) 
 		{
-
 			for (y=0; y<systemSize[1]; y++) 
 			{
 				initStorage(x, y);
@@ -163,8 +167,11 @@ int str_createSystem(char* filepath) {
 		
 		while((c = fgetc(fp)) != EOF)
 		{	
+			fscanf(fp, "%d %d", &input_row, &input_column); 
+			fscanf(fp, "%d %d", &deliverySystem[input_row][input_column].building, &deliverySystem[input_row][input_column].room);
+			fscanf(fp, "%s %s", deliverySystem[input_row][input_column].passwd,deliverySystem[input_row][input_column].context);
+			deliverySystem[input_row][input_column].cnt = 1;
 		
-			//fscan
 			storedCnt++;
 		}
 
