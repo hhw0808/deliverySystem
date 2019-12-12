@@ -100,10 +100,11 @@ int str_backupSystem(char* filepath) {
 	FILE *fp = NULL;
 	int x, y;
 
-	fp = fopen(filepath, "w");
+	fp = fopen(filepath, "w");	//open file
 
 	if(fp != NULL)
 	{
+		//print
 		fprintf(fp, "%d %d\n", systemSize[0], systemSize[1]);
 		fprintf(fp, "%s\n", masterPassword);
 		
@@ -121,7 +122,7 @@ int str_backupSystem(char* filepath) {
 		return 0;
 	}
 	
-	else
+	else	//failed to backup
 	{
 		return -1;
 	}
@@ -141,26 +142,28 @@ int str_createSystem(char* filepath) {
 	int input_row, input_column;
 
 	fp = fopen(filepath, "r");	//open filpath	
-	if (fp == NULL)
+	
+	if (fp == NULL)	//failed to create the system ->return -1
 	{
 		return -1;
 	}
 	else if (fp != NULL)
 	{	
-		fscanf(fp, "%d, %d", &systemSize[0], &systemSize[1]);
+		fscanf(fp, "%d, %d", &systemSize[0], &systemSize[1]);	//scan information
 		fscanf(fp, "%s", masterPassword);
 		
-		deliverySystem = (storage_t **)malloc(systemSize[0] * sizeof(storage_t*));
+		deliverySystem = (storage_t **)malloc(systemSize[0] * sizeof(storage_t*));	//memory allocation
 		
 		for(i=0; i<systemSize[0]; i++) 
 		{
-			deliverySystem[i] = (storage_t *) malloc(systemSize[1] * sizeof(storage_t));			
+			deliverySystem[i] = (storage_t *) malloc(systemSize[1] * sizeof(storage_t));	//memory allocation		
 		}
 	
 		for (x=0; x<systemSize[0]; x++) 
 		{
 			for (y=0; y<systemSize[1]; y++) 
 			{
+				//initialize
 				initStorage(x, y);
 			}
 		}
@@ -258,25 +261,23 @@ int str_checkStorage(int x, int y) {
 //return : 0 - successfully put the package, -1 - failed to put
 int str_pushToStorage(int x, int y, int nBuilding, int nRoom, char msg[MAX_MSG_SIZE+1], char passwd[PASSWD_LEN+1]) {
 
-	initStorage(x, y);
-	deliverySystem[x][y].building = nBuilding;
-	deliverySystem[x][y].room = nRoom;
-	strcpy(deliverySystem[x][y].passwd, passwd);
-	deliverySystem[x][y].context = msg;
-	
-	storedCnt++;
-	
-	if (deliverySystem[x][y].cnt > 0)
-	{
-       return 0; 
-	}
-	
-	else 
+	if (deliverySystem[x][y].cnt > 0)	//failed to put
 	{
        return -1; 
+	}
+	
+	else if (deliverySystem[x][y].cnt==0) //coordinate of the cell
+	{
+       initStorage(x, y);
+		deliverySystem[x][y].building = nBuilding;
+		deliverySystem[x][y].room = nRoom;
+		strcpy(deliverySystem[x][y].passwd, passwd);
+		deliverySystem[x][y].context = msg;
+	
+		storedCnt++;
+	
+		return 0;
     }
-
-
 
 }
 
